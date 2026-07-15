@@ -1,0 +1,67 @@
+<div class="custom-localization-wrapper" style="padding: 20px; background-color: #f9f9f9; text-align: center; font-family: sans-serif;">
+  
+  {% form 'localization', id: 'CustomLocalizationForm' %}
+    <div style="display: inline-flex; gap: 30px; align-items: center; justify-content: center; flex-wrap: wrap;">
+
+      {% if localization.available_languages.size > 1 %}
+        <div>
+          <label for="LanguageSelector" style="font-weight: bold; margin-right: 10px; color: #333;">
+            Language:
+          </label>
+          <select name="locale_code" id="LanguageSelector" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; cursor: pointer;">
+            {% for language in localization.available_languages %}
+              <option value="{{ language.iso_code }}" {% if language.iso_code == localization.language.iso_code %}selected{% endif %}>
+                {{ language.endonym_name | capitalize }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      {% if localization.available_countries.size > 1 %}
+        <div>
+          <label for="CountrySelector" style="font-weight: bold; margin-right: 10px; color: #333;">
+            Country:
+          </label>
+          <select name="country_code" id="CountrySelector" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; cursor: pointer;">
+            {% for country in localization.available_countries %}
+              <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>
+                {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+    </div>
+  {% endform %}
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const localizationForm = document.getElementById('CustomLocalizationForm');
+    
+    if (localizationForm) {
+      const selectors = localizationForm.querySelectorAll('select');
+      
+      selectors.forEach(select => {
+        select.addEventListener('change', function() {
+          localizationForm.submit();
+        });
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Localization Switcher",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Custom: Localization"
+    }
+  ]
+}
+{% endschema %}

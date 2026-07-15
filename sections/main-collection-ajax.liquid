@@ -1,0 +1,165 @@
+<div class="collection-page" style="display: flex; gap: 30px; max-width: 1200px; margin: 40px auto; font-family: sans-serif;">
+  
+  <!-- САЙДБАР З ФІЛЬТРАМИ -->
+  <aside style="width: 250px; flex-shrink: 0;">
+    <custom-filters>
+      <form id="CollectionFiltersForm">
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 10px;">Sort by</h3>
+          <select name="sort_by" style="width: 100%; padding: 8px;">
+            {% for option in collection.sort_options %}
+              <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>
+                {{ option.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% for filter in collection.filters %}
+          <div style="margin-bottom: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 10px;">{{ filter.label }}</h3>
+            
+            {% case filter.type %}
+              {% when 'boolean' or 'list' %}
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                  {% for value in filter.values %}
+                    <li style="margin-bottom: 8px;">
+                      <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox"
+                          name="{{ value.param_name }}"
+                          value="{{ value.value }}"
+                          {% if value.active %}checked{% endif %}
+                        >
+                        {{ value.label }} ({{ value.count }})
+                      </label>
+                    </li>
+                  {% endfor %}
+                </ul>
+
+              {% when 'price_range' %}
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="number" 
+                         name="{{ filter.min_value.param_name }}" 
+                         placeholder="0" 
+                         min="0" 
+                         max="{{ filter.range_max | divided_by: 100 | ceil }}"
+                         value="{{ filter.min_value.value | divided_by: 100 }}"
+                         style="width: 100%; padding: 8px;">
+                  <span>-</span>
+                  <input type="number" 
+                         name="{{ filter.max_value.param_name }}" 
+                         placeholder="{{ filter.range_max | divided_by: 100 | ceil }}" 
+                         min="0" 
+                         max="{{ filter.range_max | divided_by: 100 | ceil }}"
+                         value="{{ filter.max_value.value | divided_by: 100 }}"
+                         style="width: 100%; padding: 8px;">
+                </div>
+            {% endcase %}
+          </div>
+        {% endfor %}
+        
+      </form>
+    </custom-filters>
+  </aside>
+
+
+  <main id="ProductGridContainer" style="flex: 1;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+      {% for product in collection.products %}
+        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center;">
+          <img src="{{ product.featured_image | image_url: width: 300 }}" alt="{{ product.title | escape }}" style="max-width: 100%; height: auto; margin-bottom: 15px;">
+          <h4 style="margin: 0 0 10px 0;">{{ product.title }}</h4>
+          <p style="font-weight: bold; margin: 0;">{{ product.price | money }}</p>
+        </div>
+      {% else %}
+        <p>No products found matching your filters.</p>
+      {% endfor %}
+    </div>
+  </main>
+  <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; position: relative;">
+  <img src="{{ product.featured_image | image_url: width: 300 }}" alt="{{ product.title | escape }}" style="max-width: 100%;">
+  <h4>{{ product.title }}</h4>
+  <p>{{ product.price | money }}</p>
+  
+  <!-- Кнопка Quick View -->
+  <button class="quick-view-trigger" data-url="{{ product.url }}" style="padding: 10px; background: #eee; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%;">
+    Quick view
+  </button>
+</div>
+</div>
+
+<script>
+  document.addEventListener('click', (e) => {
+  if (e.target.matches('.quick-view-trigger')) {
+    e.preventDefault();
+    const url = e.target.getAttribute('data-url');
+    const modal = document.querySelector('quick-view-modal');
+    
+    if (modal) {
+      modal.open(url);
+    }
+  }
+});
+
+  class CustomFilters extends HTMLElement {
+    constructor() {
+      super();
+      this.form = this.querySelector('#CollectionFiltersForm');
+      
+      this.form.addEventListener('input', this.onFormChange.bind(this));
+    }
+
+    onFormChange(event) {
+      const formData = new FormData(this.form);
+      
+      const searchParams = new URLSearchParams(formData).toString();
+      
+      const url = `${window.location.pathname}?${searchParams}`;
+
+      window.history.pushState({ searchParams }, '', url);
+
+      this.renderPage(url);
+    }
+
+    renderPage(url) {
+      const gridContainer = document.getElementById('ProductGridContainer');
+      gridContainer.style.opacity = '0.5';
+      gridContainer.style.pointerEvents = 'none';
+
+      fetch(url)
+        .then(response => response.text())
+        .then(htmlText => {
+          const htmlDocument = new DOMParser().parseFromString(htmlText, 'text/html');
+
+          const newGrid = htmlDocument.getElementById('ProductGridContainer').innerHTML;
+
+          gridContainer.innerHTML = newGrid;
+
+          gridContainer.style.opacity = '1';
+          gridContainer.style.pointerEvents = 'auto';
+        })
+        .catch(error => {
+          console.error('Помилка завантаження фільтрів:', error);
+          gridContainer.style.opacity = '1';
+        });
+    }
+  }
+
+  customElements.define('custom-filters', CustomFilters);
+
+  
+  window.addEventListener('popstate', (event) => {
+    const filtersElement = document.querySelector('custom-filters');
+    if (filtersElement) {
+      filtersElement.renderPage(window.location.href);
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "AJAX Collection",
+  "settings": []
+}
+{% endschema %}

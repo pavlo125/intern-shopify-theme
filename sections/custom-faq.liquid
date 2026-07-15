@@ -1,0 +1,67 @@
+<div style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: sans-serif;">
+  
+  <h2 style="text-align: center; margin-bottom: 30px; font-size: 2rem;">
+    {{ section.settings.heading_text }}
+  </h2>
+
+  {% for block in section.blocks %}
+    
+    <details style="margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; background: #fff;" {{ block.shopify_attributes }}>
+      
+      <summary style="font-weight: bold; font-size: 1.1rem; cursor: pointer; outline: none; list-style-position: inside;">
+        {{ block.settings.question }}
+      </summary>
+      
+      <div style="padding-top: 15px; color: #555; line-height: 1.6; border-top: 1px solid #f0f0f0; margin-top: 10px;">
+        {{ block.settings.answer }}
+      </div>
+      
+    </details>
+    
+  {% endfor %}
+
+</div>
+
+{% schema %}
+{
+  "name": "FAQ (Акордеон)",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Main Title",
+      "default": "Most common question"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq_item",
+      "name": "question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "question",
+          "default": "How long is deleviry"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answwer",
+          "default": "<p>2-5 days.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom FAQ",
+      "blocks": [
+        { "type": "faq_item" },
+        { "type": "faq_item" },
+        { "type": "faq_item" }
+      ]
+    }
+  ]
+}
+{% endschema %}

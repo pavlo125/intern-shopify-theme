@@ -1,0 +1,138 @@
+<div class="custom-countdown-container" data-end-date="{{ section.settings.end_date }}" style="text-align: center; padding: 40px 20px; background-color: {{ section.settings.bg_color }};">
+  
+  {% if section.settings.title != blank %}
+    <h2 style="margin-bottom: 20px; color: {{ section.settings.text_color }};">{{ section.settings.title }}</h2>
+  {% endif %}
+
+  <div class="timer-display" style="display: flex; justify-content: center; gap: 20px; font-size: 2.5rem; font-weight: bold; color: {{ section.settings.text_color }}; font-family: monospace;">
+    <div>
+      <span class="days">00</span>
+      <div style="font-size: 0.8rem; font-weight: normal; text-transform: uppercase;">Днів</div>
+    </div>
+    <div>:</div>
+    <div>
+      <span class="hours">00</span>
+      <div style="font-size: 0.8rem; font-weight: normal; text-transform: uppercase;">Годин</div>
+    </div>
+    <div>:</div>
+    <div>
+      <span class="minutes">00</span>
+      <div style="font-size: 0.8rem; font-weight: normal; text-transform: uppercase;">Хвилин</div>
+    </div>
+    <div>:</div>
+    <div>
+      <span class="seconds">00</span>
+      <div style="font-size: 0.8rem; font-weight: normal; text-transform: uppercase;">Секунд</div>
+    </div>
+  </div>
+
+  <div class="expired-message" style="display: none; font-size: 1.5rem; color: #ff0000; margin-top: 10px; font-weight: bold;">
+    {{ section.settings.expired_text }}
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Шукаємо всі таймери на сторінці (на випадок, якщо клієнт додасть два)
+    const timers = document.querySelectorAll('.custom-countdown-container');
+
+    timers.forEach(container => {
+      // 1. Отримуємо дату з атрибута data-end-date, який заповнив Liquid
+      const endDateString = container.dataset.endDate;
+      
+      // Замінюємо пробіл на 'T', щоб усі браузери (особливо Safari) правильно зрозуміли формат
+      const validDateString = endDateString.replace(' ', 'T'); 
+      const countDownDate = new Date(validDateString).getTime();
+
+      if (isNaN(countDownDate)) {
+        console.error('Неправильний формат дати таймера');
+        return;
+      }
+
+      // Знаходимо HTML-елементи для оновлення цифр
+      const display = container.querySelector('.timer-display');
+      const expiredMsg = container.querySelector('.expired-message');
+      const daysEl = container.querySelector('.days');
+      const hoursEl = container.querySelector('.hours');
+      const minutesEl = container.querySelector('.minutes');
+      const secondsEl = container.querySelector('.seconds');
+
+      // 2. Запускаємо функцію щосекунди (1000 мілісекунд)
+      const x = setInterval(function() {
+        // Отримуємо поточний час комп'ютера клієнта
+        const now = new Date().getTime();
+        
+        // Знаходимо різницю між кінцем розпродажу та зараз
+        const distance = countDownDate - now;
+
+        // 3. Якщо час вийшов — зупиняємо таймер і показуємо повідомлення
+        if (distance < 0) {
+          clearInterval(x);
+          display.style.display = "none";
+          expiredMsg.style.display = "block";
+          return;
+        }
+
+        // 4. Математика: переводимо мілісекунди в дні, години, хвилини та секунди
+        // Math.floor округлює число донизу
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        // Оператор % (залишок від ділення) допомагає відкинути повні дні і рахувати тільки залишок годин
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Вставляємо цифри в HTML, додаючи нуль спереду, якщо цифра < 10 (напр. 09 замість 9)
+        daysEl.innerText = days < 10 ? '0' + days : days;
+        hoursEl.innerText = hours < 10 ? '0' + hours : hours;
+        minutesEl.innerText = minutes < 10 ? '0' + minutes : minutes;
+        secondsEl.innerText = seconds < 10 ? '0' + seconds : seconds;
+        
+      }, 1000);
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Таймер розпродажу",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Заголовок",
+      "default": "Розпродаж закінчується через:"
+    },
+    {
+      "type": "text",
+      "id": "end_date",
+      "label": "Дата та час закінчення",
+      "info": "Формат: YYYY-MM-DD HH:MM:SS (наприклад, 2026-12-31 23:59:00)",
+      "default": "2026-12-31 23:59:00"
+    },
+    {
+      "type": "text",
+      "id": "expired_text",
+      "label": "Текст після закінчення",
+      "default": "Розпродаж завершено! Чекайте на нові знижки."
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Колір фону",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Колір тексту",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Таймер розпродажу"
+    }
+  ]
+}
+{% endschema %}

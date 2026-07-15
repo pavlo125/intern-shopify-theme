@@ -1,0 +1,87 @@
+{% if product.metafields.custom.size_guide != blank %}
+  <div style="margin: 20px 0; font-family: sans-serif;">
+    <!-- Button to trigger the modal -->
+    <button id="OpenSizeGuide" style="background: none; border: none; text-decoration: underline; cursor: pointer; font-size: 1rem; color: #333; padding: 0;">
+      Size guide
+    </button>
+  </div>
+
+  <!-- The Modal Overlay -->
+  <div id="SizeGuideModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 9999; justify-content: center; align-items: center;">
+    
+    <!-- Modal Content -->
+    <div style="background-color: #fff; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
+      
+      <!-- Close Button -->
+      <button id="CloseSizeGuide" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #333; line-height: 1;">
+        &times;
+      </button>
+      
+      <h2 style="margin-top: 0; font-size: 1.5rem; margin-bottom: 20px; color: #111;">
+        Size Guide
+      </h2>
+      
+      <!-- Metafield Content Rendering -->
+      <div style="color: #444; line-height: 1.6;">
+        {{ product.metafields.custom.size_guide | metafield_tag }}
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('SizeGuideModal');
+      const openBtn = document.getElementById('OpenSizeGuide');
+      const closeBtn = document.getElementById('CloseSizeGuide');
+
+      if (!modal || !openBtn || !closeBtn) return;
+
+      // 1. Open the modal
+      openBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Use 'flex' instead of 'block' to keep the content centered
+        modal.style.display = 'flex'; 
+        // Prevent background scrolling when modal is open
+        document.body.style.overflow = 'hidden'; 
+      });
+
+      // 2. Close the modal when clicking the 'X' button
+      closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+      });
+
+      // 3. Close the modal when clicking anywhere outside of the modal content
+      window.addEventListener('click', function(event) {
+        // 'event.target' is the exact element the user clicked.
+        // If they clicked the dark overlay (the modal container itself), we close it.
+        if (event.target === modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+      
+      // Optional: Close modal on 'Escape' key press
+      document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape" && modal.style.display === 'flex') {
+          modal.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+    });
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Size Guide Modal",
+  "templates": ["product"],
+  "settings": [],
+  "presets": [
+    {
+      "name": "Custom: Size Guide"
+    }
+  ]
+}
+{% endschema %}

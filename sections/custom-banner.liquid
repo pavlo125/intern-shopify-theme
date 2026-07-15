@@ -1,0 +1,63 @@
+<div style="background-color: {{ section.settings.bg_color }}; padding: 50px 20px; text-align: center; margin: 20px 0;">
+  
+  {% if section.settings.banner_image != blank %}
+    <img id="banner-img" src="{{ section.settings.banner_image | image_url: width: 800 }}" 
+         alt="Custom Banner" 
+         style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+  {% endif %}
+  
+  <h2 style="color: #ffffff; margin-top: 20px; font-family: sans-serif;">
+    {{ section.settings.heading_text }}
+  </h2>
+  
+  <button id="button-hide" style="margin-top: 15px; padding: 10px 20px; cursor: pointer; border-radius: 5px; border: none; background: #ff0000; color: white; font-weight: bold;"> 
+    Hide this picture 
+  </button>
+
+</div>
+
+<script>
+    var MyImage = document.getElementById('banner-img');
+    var MyButton = document.getElementById('button-hide');
+
+    MyButton.addEventListener('click' , function() {
+    if(MyImage.style.display === 'none'){
+    MyImage.style.display = 'block ';
+    MyButton.innerText = 'Hide this picture'
+  }else{
+    MyImage.style.display = 'none'
+    MyButton.innerText = 'Show this picture'
+  }
+    });
+
+</script>
+
+{% schema %}
+{
+  "name": "Мій Кастомний Банер",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Текст заголовка",
+      "default": "Ласкаво просимо до нашого магазину!"
+    },
+    {
+      "type": "image_picker",
+      "id": "banner_image",
+      "label": "Виберіть картинку"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Колір фону",
+      "default": "#1a1a1a"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Мій Кастомний Банер"
+    }
+  ]
+}
+{% endschema %}

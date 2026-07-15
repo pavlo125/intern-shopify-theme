@@ -1,0 +1,128 @@
+<style>
+  quick-view-modal {
+    display: none; /* За замовчуванням сховано */
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  quick-view-modal[open="true"] {
+    display: flex;
+  }
+
+  .quick-view-content {
+    background: #fff;
+    padding: 30px;
+    width: 90%;
+    max-width: 800px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+
+  .quick-view-close {
+    position: absolute;
+    top: 15px; right: 15px;
+    background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #333; line-height: 1;
+  }
+</style>
+
+<quick-view-modal id="QuickViewModal" open="false">
+  <div class="quick-view-content">
+    <button class="quick-view-close" id="QuickViewClose">&times;</button>
+    <div id="QuickViewBody">
+      <!-- Сюди Section Rendering API вставить згенерований HTML -->
+    </div>
+  </div>
+</quick-view-modal>
+
+<script>
+  class QuickViewModal extends HTMLElement {
+    constructor() {
+      super();
+      this.closeBtn = this.querySelector('#QuickViewClose');
+      this.body = this.querySelector('#QuickViewBody');
+      this.close = this.close.bind(this);
+    }
+
+    connectedCallback() {
+      // Закриття по хрестику та кліку на темний фон
+      this.closeBtn.addEventListener('click', this.close);
+      this.addEventListener('click', (e) => {
+        if (e.target === this) this.close();
+      });
+    }
+
+    open(productUrl) {
+      this.setAttribute('open', 'true');
+      document.body.style.overflow = 'hidden';
+      this.body.innerHTML = '<p style="text-align: center; font-size: 1.2rem;">Loading...</p>';
+
+      // МАГІЯ 1: Section Rendering API
+      // Ми додаємо ?section_id=custom-quick-view до URL товару
+      fetch(`${productUrl}?section_id=custom-quick-view`)
+        .then(response => response.text())
+        .then(html => {
+          // Парсимо HTML і дістаємо контент із згенерованої секції
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const sectionContent = doc.querySelector('.shopify-section').innerHTML;
+          
+          this.body.innerHTML = sectionContent;
+
+          // МАГІЯ 2: Підключаємо AJAX кошик до щойно створеної форми
+          this.attachAjaxCart();
+        })
+        .catch(error => console.error('Error loading quick view:', error));
+    }
+
+    close() {
+      this.setAttribute('open', 'false');
+      document.body.style.overflow = 'auto';
+      this.body.innerHTML = ''; // Очищаємо пам'ять
+    }
+
+    attachAjaxCart() {
+      const form = this.querySelector('#QuickViewForm');
+      if (!form) return;
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault(); // Зупиняємо перехід
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Adding...';
+
+        const formData = new FormData(form);
+
+        fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          submitBtn.innerHTML = 'Added ✔️';
+          
+          // Закриваємо модалку через секунду
+          setTimeout(() => this.close(), 1000);
+          
+          // Оновлюємо кошик (виклик з Завдання 25)
+          const cartDrawer = document.querySelector('custom-cart-drawer');
+          if (cartDrawer) {
+            cartDrawer.updateMarkup();
+          }
+        })
+        .catch(error => {
+          console.error('AJAX Cart Error:', error);
+          submitBtn.innerHTML = 'Error!';
+          setTimeout(() => submitBtn.innerHTML = originalText, 2000);
+        });
+      });
+    }
+  }
+
+  customElements.define('quick-view-modal', QuickViewModal);
+</script>

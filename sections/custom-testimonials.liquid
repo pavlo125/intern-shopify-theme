@@ -1,0 +1,116 @@
+<div style="max-width: 1200px; margin: 50px auto; padding: 0 20px; font-family: sans-serif;">
+
+  {% if section.settings.heading != blank %}
+    <h2 style="text-align: center; margin-bottom: 40px; font-size: 2.5rem; color: #222;">
+      {{ section.settings.heading }}
+    </h2>
+  {% endif %}
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+    
+    {% for block in section.blocks %}
+      
+      {% case block.type %}
+        {% when 'testimonial' %}
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;" {{ block.shopify_attributes }}>
+              
+            {% if block.settings.avatar != blank %}
+              <img src="{{ block.settings.avatar | image_url: width: 80 }}" 
+                   srcset="
+                     {{ block.settings.avatar | image_url: width: 80 }} 80w,
+                     {{ block.settings.avatar | image_url: width: 160 }} 160w,
+                     {{ block.settings.avatar | image_url: width: 240 }} 240w
+                   "
+                   sizes="80px"
+                   alt="{{ block.settings.author | escape }}"
+                   loading="lazy"
+                   width="80"
+                   height="80"
+                   style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin: 0 auto 15px auto;">
+            {% else %}
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: #ccc; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; font-weight: bold;">
+                {{ block.settings.author | slice: 0 }}
+              </div>
+            {% endif %}
+
+            <div style="color: #FFD700; font-size: 1.2rem; margin-bottom: 15px;">
+              {% if block.settings.rating == '5' %}
+                ★★★★★
+              {% else %}
+                ★★★★☆
+              {% endif %}
+            </div>
+
+            <p style="font-style: italic; color: #555; line-height: 1.6; margin-bottom: 20px;">
+              "{{ block.settings.review_text }}"
+            </p>
+
+            <h4 style="margin: 0; color: #111; font-size: 1.1rem;">
+              {{ block.settings.author }}
+            </h4>
+
+          </div>
+      {% endcase %}
+    {% endfor %}
+    
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Відгуки клієнтів",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Заголовок секції",
+      "default": "Що кажуть наші клієнти"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Відгук",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Фото клієнта (необов'язково)"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Ім'я клієнта",
+          "default": "Іван Франко"
+        },
+        {
+          "type": "textarea",
+          "id": "review_text",
+          "label": "Текст відгуку",
+          "default": "Неймовірна якість! Джерсі сидить ідеально, доставка була дуже швидкою."
+        },
+        {
+          "type": "select",
+          "id": "rating",
+          "label": "Оцінка",
+          "options": [
+            { "value": "5", "label": "5 Зірок" },
+            { "value": "4", "label": "4 Зірки" }
+          ],
+          "default": "5"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Кастомні: Відгуки",
+      "blocks": [
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" }
+      ]
+    }
+  ]
+}
+{% endschema %}

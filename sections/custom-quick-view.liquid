@@ -1,0 +1,39 @@
+<!-- 
+  ВАЖЛИВО: {%- layout none -%} гарантує, що Shopify не буде загортати 
+  цей код у стандартний шапку (header) і футер (footer). Нам потрібен ТІЛЬКИ товар. 
+-->
+{%- layout none -%}
+
+<div class="quick-view-product" style="display: flex; gap: 20px; font-family: sans-serif;">
+  
+  <!-- Зображення товару -->
+  <div class="quick-view-image" style="flex: 1;">
+    <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title | escape }}" style="width: 100%; border-radius: 8px; object-fit: cover;">
+  </div>
+  
+  <!-- Деталі товару -->
+  <div class="quick-view-info" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+    <h2 style="margin-top: 0;">{{ product.title }}</h2>
+    <p style="font-size: 1.5rem; font-weight: bold; margin: 10px 0;">{{ product.price | money }}</p>
+    
+    <div style="color: #666; margin-bottom: 20px;">
+      {{ product.description | strip_html | truncatewords: 20 }}
+    </div>
+
+    <!-- Форма додавання в кошик -->
+    {% form 'product', product, id: 'QuickViewForm' %}
+      <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+      <button type="submit" name="add" style="width: 100%; padding: 15px; background: #000; color: #fff; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 1rem; transition: background 0.2s;">
+        Add to Cart
+      </button>
+    {% endform %}
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Quick View Template",
+  "settings": []
+}
+{% endschema %}

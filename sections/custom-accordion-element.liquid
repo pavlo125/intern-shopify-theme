@@ -1,0 +1,126 @@
+<style>
+  custom-accordion {
+    display: block;
+    max-width: 600px;
+    margin: 30px auto;
+    border-bottom: 1px solid #ccc;
+    font-family: sans-serif;
+  }
+  
+  custom-accordion summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    list-style: none; 
+  }
+
+  
+  custom-accordion summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .accordion-content {
+    padding-bottom: 15px;
+    color: #555;
+    line-height: 1.6;
+    display: none; 
+  }
+
+ 
+  custom-accordion[open="true"] .accordion-content {
+    display: block;
+  }
+
+ 
+  .icon-plus { transition: transform 0.3s ease; }
+  custom-accordion[open="true"] .icon-plus { transform: rotate(45deg); }
+</style>
+
+
+
+<custom-accordion data-id="{{ section.id }}" open="false">
+  <summary aria-expanded="false">
+    {{ section.settings.title }}
+    <span class="icon-plus">➕</span>
+  </summary>
+  <div class="accordion-content">
+    {{ section.settings.content }}
+  </div>
+</custom-accordion>
+
+
+
+<script>
+  if (!customElements.get('custom-accordion')) {
+    
+    class CustomAccordion extends HTMLElement {
+      
+      constructor() {
+        super(); 
+        
+       
+        this.summary = this.querySelector('summary');
+        this.content = this.querySelector('.accordion-content');
+        
+        this.toggleAccordion = this.toggleAccordion.bind(this);
+      }
+
+      connectedCallback() {
+        if (this.summary) {
+          this.summary.addEventListener('click', this.toggleAccordion);
+        }
+      }
+
+      
+      disconnectedCallback() {
+        if (this.summary) {
+          this.summary.removeEventListener('click', this.toggleAccordion);
+        }
+      }
+
+      toggleAccordion(event) {
+        const isOpen = this.getAttribute('open') === 'true';
+
+        if (isOpen) {
+          this.setAttribute('open', 'false');
+          this.summary.setAttribute('aria-expanded', 'false');
+        } else {
+          this.setAttribute('open', 'true');
+          this.summary.setAttribute('aria-expanded', 'true');
+        }
+      }
+    }
+
+    customElements.define('custom-accordion', CustomAccordion);
+  }
+</script>
+
+
+{% schema %}
+{
+  "name": "Dawn Web Component FAQ",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "question",
+      "default": "How long is delivery?"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Answer",
+      "default": "<p>Usally from 2 to 5 days.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Web-Component"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,70 @@
+<div id="sticky-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; transform: translateY(100%); transition: transform 0.3s ease-in-out; font-family: sans-serif;">
+  
+  <div style="display: flex; align-items: center; gap: 15px;">
+    {% if product.featured_image != blank %}
+      <img src="{{ product.featured_image | image_url: width: 50 }}" 
+           alt="{{ product.title | escape }}" 
+           width="50" height="50" 
+           style="border-radius: 4px; object-fit: cover;">
+    {% endif %}
+    <span style="font-weight: bold; color: #333; font-size: 1.1rem;">
+      {{ product.title }}
+    </span>
+  </div>
+
+  <button id="sticky-add-btn" style="background: #000; color: #fff; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s;">
+    Додати в кошик — {{ product.price | money }}
+  </button>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const stickyBar = document.getElementById('sticky-bar');
+    const stickyBtn = document.getElementById('sticky-add-btn');
+
+    // Шукаємо оригінальну кнопку "Додати в кошик" на сторінці. 
+    // У темах Shopify (як Dawn) вона зазвичай має атрибут name="add"
+    const mainAddToCartBtn = document.querySelector('button[name="add"]');
+
+    // Якщо ми не на сторінці товару або кнопки немає — зупиняємо скрипт
+    if (!mainAddToCartBtn) return;
+
+    // Створюємо "Спостерігача" (Intersection Observer)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // Якщо оригінальна кнопка НЕ в полі зору екрана (!entry.isIntersecting)
+        if (!entry.isIntersecting) {
+          // Виїжджаємо вгору
+          stickyBar.style.transform = 'translateY(0)'; 
+        } else {
+          // Ховаємося назад вниз
+          stickyBar.style.transform = 'translateY(100%)'; 
+        }
+      });
+    }, { 
+      threshold: 0 // Спрацьовує одразу, як тільки кнопка хоч на 1 піксель перетне межу
+    });
+
+    // Наказуємо спостерігачу слідкувати за головною кнопкою
+    observer.observe(mainAddToCartBtn);
+
+    // Коли клікають на нашу плаваючу кнопку, ми імітуємо клік по оригінальній
+    stickyBtn.addEventListener('click', function() {
+      mainAddToCartBtn.click();
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Sticky Add to Cart",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Кастомний: Sticky Bar"
+    }
+  ],
+  "templates": ["product"] 
+}
+{% endschema %}

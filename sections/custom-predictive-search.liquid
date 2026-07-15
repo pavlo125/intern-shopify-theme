@@ -1,0 +1,173 @@
+<style>
+  .predictive-search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 40px auto;
+    font-family: sans-serif;
+  }
+  
+  .predictive-search-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  .predictive-search-input:focus {
+    border-color: #000;
+  }
+
+  .predictive-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: none; /* Сховано за замовчуванням */
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .predictive-search-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+  }
+
+  .predictive-search-item:hover {
+    background: #f9f9f9;
+  }
+
+  .predictive-search-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .predictive-search-loading {
+    padding: 15px;
+    text-align: center;
+    color: #666;
+    display: none;
+  }
+</style>
+
+<div class="predictive-search-container">
+  <input 
+    type="text" 
+    id="SearchInput" 
+    class="predictive-search-input" 
+    placeholder="Search for products..." 
+    autocomplete="off"
+  >
+  
+  <div id="SearchResults" class="predictive-search-results">
+  </div>
+  
+  <div id="SearchLoading" class="predictive-search-loading">
+    Searching...
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('SearchInput');
+    const searchResults = document.getElementById('SearchResults');
+    const searchLoading = document.getElementById('SearchLoading');
+
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+      };
+    }
+
+    const fetchPredictiveSearchResults = debounce(function(query) {
+      if (!query.trim()) {
+        searchResults.style.display = 'none';
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      searchResults.style.display = 'none';
+      searchLoading.style.display = 'block';
+
+      
+      const url = `${window.Shopify.routes.root}search/suggest.json?q=${encodeURIComponent(query)}&resources[type]=product&resources[limit]=5`;
+
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          const products = data.resources.results.products;
+          
+          searchLoading.style.display = 'none';
+
+          if (products.length > 0) {
+            let html = '';
+            
+            products.forEach(product => {
+              html += `
+                <a href="${product.url}" class="predictive-search-item">
+                  ${product.image ? `<img src="${product.image}" alt="${product.title}">` : '<div style="width:50px; height:50px; background:#eee;"></div>'}
+                  <div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 1rem;">${product.title}</h4>
+                    <span style="font-weight: bold;">${product.price}</span>
+                  </div>
+                </a>
+              `;
+            });
+            
+            searchResults.innerHTML = html;
+            searchResults.style.display = 'block';
+          } else {
+            searchResults.innerHTML = '<div style="padding: 15px; color: #666;">No results found.</div>';
+            searchResults.style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching predictive search:', error);
+          searchLoading.style.display = 'none';
+        });
+    }, 300); 
+
+    searchInput.addEventListener('input', function(e) {
+      fetchPredictiveSearchResults(e.target.value);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.predictive-search-container')) {
+        searchResults.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Predictive Search",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Custom: Predictive Search"
+    }
+  ]
+}
+{% endschema %}
