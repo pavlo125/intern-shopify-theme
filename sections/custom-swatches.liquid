@@ -1,41 +1,42 @@
 <div style="display: flex; gap: 40px; max-width: 1000px; margin: 40px auto; font-family: sans-serif; padding: 20px;">
     <div style="flex: 1;">
         {% assign current_variant = product.selected_or_first_available_variant %}
-<img id="main-product-image" 
-         src="{{ current_variant.featured_image | default: product.featured_image | image_url: width: 600 }}" 
-         alt="{{ product.title }}" 
-         style="width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-</div>
-
-<div style="flex: 1;">
-    <h1 style="margin-top: 0;">
-       {{ product.title  }}
-    </h1>
-    <h2 id="product-price" style="color: #ff0000;"> {{ current_variant.price | monet }}</h2>
-    <p style="font-weight: bold; margin-top: 30px;"> Choose color of product</p>
-
-    <div style="display: flex; gap:10 px;"
-        {% for variant in product.variants %}
-            {%assign color_name = variant.title | downcase %}
-            <button class="color-swatch">
-                data-variant-id="{{ variant.id }}"
-                data-price="{{ variant.price | money }}"
-                data-image="{{ variant.featured_image | image_url: width: 600 }}"
-                title="{{ variant.title }}"
-                style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #ccc; background-color: {{ color_name }};">
-            </button>       
-        {% endfor %}     
+        <img id="main-product-image" 
+             src="{{ current_variant.featured_image | default: product.featured_image | image_url: width: 600 }}"
+             width="{{ current_variant.featured_image.width | default: 600 }}"
+             height="{{ current_variant.featured_image.height | default: 600 }}"
+             alt="{{ product.title | escape }}" 
+             style="width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
     </div>
 
-</div>
+    <div style="flex: 1;">
+        <h1 style="margin-top: 0;">
+           {{ product.title }}
+        </h1>
+        <h2 id="product-price" style="color: #ff0000;">{{ current_variant.price | money }}</h2>
+        <p style="font-weight: bold; margin-top: 30px;">Choose color of product</p>
+
+        <div style="display: flex; gap: 10px;">
+            {% for variant in product.variants %}
+                {% assign color_name = variant.title | downcase %}
+                <button class="color-swatch"
+                        data-variant-id="{{ variant.id }}"
+                        data-price="{{ variant.price | money }}"
+                        data-image="{{ variant.featured_image | image_url: width: 600 }}"
+                        title="{{ variant.title }}"
+                        style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid #ccc; background-color: {{ color_name }};">
+                </button>       
+            {% endfor %}     
+        </div>
+    </div>
 </div>
 
 <script>
-    const swatch = documet.querySellectorAll(".color-swatch");
-    const mainImage = documet.getElemetById (".main-product.image") ;
-    const priceDisplay = documet.getElemetById (.product-price);
+    const swatches = document.querySelectorAll(".color-swatch");
+    const mainImage = document.getElementById("main-product-image");
+    const priceDisplay = document.getElementById("product-price");
 
-    swatched.forEach(swatch => {
+    swatches.forEach(swatch => {
         swatch.addEventListener('click', function(){
             if (this.dataset.image) {
                 mainImage.src = this.dataset.image;
@@ -43,12 +44,12 @@
 
             priceDisplay.innerHTML = this.dataset.price;
 
-            swatches.forEach = (s => s.style.borderColor = '#ccc');
-            this.style.borderColor = '#000'
+            swatches.forEach(s => s.style.borderColor = '#ccc');
+            this.style.borderColor = '#000';
             
-            consol.log("Yoy choose variant with this id", this.dateset.variantId);
-        })
-    })
+            console.log("You chose variant with this id", this.dataset.variantId);
+        });
+    });
 </script>
 
 {% schema %}

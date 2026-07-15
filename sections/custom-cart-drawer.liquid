@@ -75,7 +75,10 @@
         {% else %}
           {% for item in cart.items %}
             <div class="drawer-item">
-              <img src="{{ item.image | image_url: width: 160 }}" alt="{{ item.title | escape }}">
+              <img src="{{ item.image | image_url: width: 160 }}" 
+                   width="{{ item.image.width | default: 160 }}"
+                   height="{{ item.image.height | default: 160 }}"
+                   alt="{{ item.title | escape }}">
               <div class="drawer-item-details">
                 <h4>{{ item.product.title }}</h4>
                 {% unless item.product.has_only_default_variant %}

@@ -1,14 +1,15 @@
-<!-- 
-  ВАЖЛИВО: {%- layout none -%} гарантує, що Shopify не буде загортати 
-  цей код у стандартний шапку (header) і футер (footer). Нам потрібен ТІЛЬКИ товар. 
--->
+
 {%- layout none -%}
 
 <div class="quick-view-product" style="display: flex; gap: 20px; font-family: sans-serif;">
   
   <!-- Зображення товару -->
   <div class="quick-view-image" style="flex: 1;">
-    <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title | escape }}" style="width: 100%; border-radius: 8px; object-fit: cover;">
+    <img src="{{ product.featured_image | image_url: width: 400 }}" 
+         width="{{ product.featured_image.width | default: 400 }}"
+         height="{{ product.featured_image.height | default: 400 }}"
+         alt="{{ product.title | escape }}" 
+         style="width: 100%; border-radius: 8px; object-fit: cover;">
   </div>
   
   <!-- Деталі товару -->

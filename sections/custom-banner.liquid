@@ -2,6 +2,8 @@
   
   {% if section.settings.banner_image != blank %}
     <img id="banner-img" src="{{ section.settings.banner_image | image_url: width: 800 }}" 
+         width="{{ section.settings.banner_image.width }}"
+         height="{{ section.settings.banner_image.height }}"
          alt="Custom Banner" 
          style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
   {% endif %}
@@ -21,15 +23,14 @@
     var MyButton = document.getElementById('button-hide');
 
     MyButton.addEventListener('click' , function() {
-    if(MyImage.style.display === 'none'){
-    MyImage.style.display = 'block ';
-    MyButton.innerText = 'Hide this picture'
-  }else{
-    MyImage.style.display = 'none'
-    MyButton.innerText = 'Show this picture'
-  }
+      if(MyImage.style.display === 'none'){
+        MyImage.style.display = 'block';
+        MyButton.innerText = 'Hide this picture';
+      } else {
+        MyImage.style.display = 'none';
+        MyButton.innerText = 'Show this picture';
+      }
     });
-
 </script>
 
 {% schema %}
